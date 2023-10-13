@@ -242,11 +242,11 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             ])
         }
     }
-
+    
     // MARK: - Player and source
     @objc
     func setSrc(_ source:NSDictionary!) {
-        DispatchQueue.global(qos: .default).async {
+        let dispatchClosure = {
             self._source = VideoSource(source)
             if (self._source?.uri == nil || self._source?.uri == "") {
                 self._player?.replaceCurrentItem(with: nil)
@@ -319,14 +319,14 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
                         self.setAutomaticallyWaitsToMinimizeStalling(self._automaticallyWaitsToMinimizeStalling)
                     }
 
-#if USE_GOOGLE_IMA
+    #if USE_GOOGLE_IMA
                     if self._adTagUrl != nil {
                         // Set up your content playhead and contentComplete callback.
                         self._contentPlayhead = IMAAVPlayerContentPlayhead(avPlayer: self._player!)
 
                         self._imaAdsManager.setUpAdsLoader()
                     }
-#endif
+    #endif
                     //Perform on next run loop, otherwise onVideoLoadStart is nil
                     self.onVideoLoadStart?([
                         "src": [
@@ -340,6 +340,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
                 }.catch{_ in }
             self._videoLoadStarted = true
         }
+        
+        DispatchQueue.global(qos: .default).async(execute: dispatchClosure)
     }
 
     @objc
